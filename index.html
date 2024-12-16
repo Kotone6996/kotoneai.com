@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithm Visualizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #2e3b4e;
+            color: white;
+            text-align: center;
+            margin: 0;
+        }
+        .container {
+            padding: 20px;
+        }
+        input, button, textarea {
+            padding: 10px;
+            margin: 10px;
+            border: 1px solid #5368E6;
+            border-radius: 5px;
+            background-color: #353A40;
+            color: white;
+            font-size: 14px;
+        }
+        button {
+            cursor: pointer;
+            background-color: #5368E6;
+        }
+        button:hover {
+            background-color: #91A5A7;
+        }
+        #output {
+            margin-top: 20px;
+            background-color: #91A5A7;
+            padding: 15px;
+            min-height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #353A40;
+        }
+        #algorithmList {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .algorithm-btn {
+            margin: 10px;
+            padding: 12px 20px;
+            background-color: #CD873C;
+            border: none;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .algorithm-btn:hover {
+            background-color: #91A5A7;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Algorithm Visualizer</h1>
+        <p>Select an algorithm and enter your data to run:</p>
+        <div id="algorithmList"></div>
+
+        <div id="output">
+            Results will be displayed here.
+        </div>
+    </div>
+
+    <script>
+        // --- Helper Functions ---
+
+        // Bubble Sort
+        function bubbleSort(arr) {
+            let n = arr.length;
+            for (let i = 0; i < n - 1; i++) {
+                for (let j = 0; j < n - 1 - i; j++) {
+                    if (arr[j] > arr[j + 1]) {
+                        let temp = arr[j];
+                        arr[j] = arr[j + 1];
+                        arr[j + 1] = temp;
+                    }
+                }
+            }
+            return arr;
+        }
+
+        // Selection Sort
+        function selectionSort(arr) {
+            let n = arr.length;
+            for (let i = 0; i < n - 1; i++) {
+                let minIndex = i;
+                for (let j = i + 1; j < n; j++) {
+                    if (arr[j] < arr[minIndex]) {
+                        minIndex = j;
+                    }
+                }
+                let temp = arr[i];
+                arr[i] = arr[minIndex];
+                arr[minIndex] = temp;
+            }
+            return arr;
+        }
+
+        // Insertion Sort
+        function insertionSort(arr) {
+            let n = arr.length;
+            for (let i = 1; i < n; i++) {
+                let key = arr[i];
+                let j = i - 1;
+                while (j >= 0 && arr[j] > key) {
+                    arr[j + 1] = arr[j];
+                    j = j - 1;
+                }
+                arr[j + 1] = key;
+            }
+            return arr;
+        }
+
+        // Counting Sort
+        function countingSort(arr) {
+            let max = Math.max(...arr);
+            let count = new Array(max + 1).fill(0);
+            let output = [];
+
+            for (let i = 0; i < arr.length; i++) {
+                count[arr[i]]++;
+            }
+
+            for (let i = 0; i < count.length; i++) {
+                while (count[i] > 0) {
+                    output.push(i);
+                    count[i]--;
+                }
+            }
+            return output;
+        }
+
+        // Radix Sort
+        function getDigit(num, place) {
+            return Math.floor(Math.abs(num) / Math.pow(10, place)) % 10;
+        }
+
+        function radixSort(arr) {
+            let max = Math.max(...arr);
+            let maxDigits = Math.floor(Math.log10(max)) + 1;
+            for (let i = 0; i < maxDigits; i++) {
+                let buckets = Array.from({ length: 10 }, () => []);
+                for (let num of arr) {
+                    let digit = getDigit(num, i);
+                    buckets[digit].push(num);
+                }
+                arr = [].concat(...buckets);
+            }
+            return arr;
+        }
+
+        // Linked List
+        function LinkedList() {
+            this.head = null;
+            this.size = 0;
+        }
+
+        LinkedList.prototype.append = function(data) {
+            const node = { data: data, next: null };
+            if (this.size === 0) {
+                this.head = node;
+            } else {
+                let current = this.head;
+                while (current.next) {
+                    current = current.next;
+                }
+                current.next = node;
+            }
+            this.size++;
+        };
+
+        LinkedList.prototype.display = function() {
+            let current = this.head;
+            let result = [];
+            while (current) {
+                result.push(current.data);
+                current = current.next;
+            }
+            return result.join(" -> ");
+        };
+
+        // Circular Linked List
+        function CircularLinkedList() {
+            this.head = null;
+            this.tail = null;
+            this.size = 0;
+        }
+
+        CircularLinkedList.prototype.append = function(data) {
+            const node = { data: data, next: null };
+            if (this.size === 0) {
+                this.head = node;
+                this.tail = node;
+                node.next = node;
+            } else {
+                this.tail.next = node;
+                this.tail = node;
+                node.next = this.head;
+            }
+            this.size++;
+        };
+
+        CircularLinkedList.prototype.display = function() {
+            if (this.size === 0) return '';
+            let current = this.head;
+            let result = [];
+            do {
+                result.push(current.data);
+                current = current.next;
+            } while (current !== this.head);
+            return result.join(" -> ");
+        };
+
+        // --- Queue Implementation ---
+        function Queue() {
+            this.items = [];
+        }
+
+        Queue.prototype.enqueue = function(element) {
+            this.items.push(element);
+        };
+
+        Queue.prototype.dequeue = function() {
+            return this.items.shift();
+        };
+
+        Queue.prototype.front = function() {
+            return this.items[0];
+        };
+
+        Queue.prototype.isEmpty = function() {
+            return this.items.length === 0;
+        };
+
+        Queue.prototype.size = function() {
+            return this.items.length;
+        };
+
+        Queue.prototype.display = function() {
+            return this.items.join(', ');
+        };
+
+        // --- Tree Traversal Functions ---
+
+        function TreeNode(value) {
+            this.value = value;
+            this.left = null;
+            this.right = null;
+        }
+
+        function inorderTraversal(root) {
+            if (root === null) return [];
+            return [...inorderTraversal(root.left), root.value, ...inorderTraversal(root.right)];
+        }
+
+        function preorderTraversal(root) {
+            if (root === null) return [];
+            return [root.value, ...preorderTraversal(root.left), ...preorderTraversal(root.right)];
+        }
+
+        function postorderTraversal(root) {
+            if (root === null) return [];
+            return [...postorderTraversal(root.left), ...postorderTraversal(root.right), root.value];
+        }
+
+        // --- Algorithm Execution ---
+
+        function runAlgorithm(algorithm) {
+            let result = '';
+            let inputData = document.getElementById("inputData").value.trim();
+            if (inputData === '') {
+                result = 'Please enter valid data.';
+            } else {
+                let arr = inputData.split(',').map(num => parseInt(num.trim()));
+
+                switch (algorithm) {
+                    case 'bubbleSort':
+                        result = 'Bubble Sort: ' + bubbleSort(arr).join(', ');
+                        break;
+                    case 'selectionSort':
+                        result = 'Selection Sort: ' + selectionSort(arr).join(', ');
+                        break;
+                    case 'insertionSort':
+                        result = 'Insertion Sort: ' + insertionSort(arr).join(', ');
+                        break;
+                    case 'countingSort':
+                        result = 'Counting Sort: ' + countingSort(arr).join(', ');
+                        break;
+                    case 'radixSort':
+                        result = 'Radix Sort: ' + radixSort(arr).join(', ');
+                        break;
+                    case 'queue':
+                        let queue = new Queue();
+                        arr.forEach(item => queue.enqueue(item));
+                        result = 'Queue: ' + queue.display();
+                        break;
+                    case 'linkedList':
+                        let linkedList = new LinkedList();
+                        arr.forEach(item => linkedList.append(item));
+                        result = 'Linked List: ' + linkedList.display();
+                        break;
+                    case 'circularLinkedList':
+                        let circularList = new CircularLinkedList();
+                        arr.forEach(item => circularList.append(item));
+                        result = 'Circular Linked List: ' + circularList.display();
+                        break;
+                    case 'treeInorder':
+                        let rootInorder = new TreeNode(arr[0]);
+                        arr.slice(1).forEach(value => {
+                            let node = new TreeNode(value);
+                            rootInorder.right = node; 
+                        });
+                        result = 'Tree Inorder: ' + inorderTraversal(rootInorder).join(', ');
+                        break;
+                    case 'treePreorder':
+                        let rootPreorder = new TreeNode(arr[0]);
+                        arr.slice(1).forEach(value => {
+                            let node = new TreeNode(value);
+                            rootPreorder.right = node;
+                        });
+                        result = 'Tree Preorder: ' + preorderTraversal(rootPreorder).join(', ');
+                        break;
+                    case 'treePostorder':
+                        let rootPostorder = new TreeNode(arr[0]);
+                        arr.slice(1).forEach(value => {
+                            let node = new TreeNode(value);
+                            rootPostorder.right = node;
+                        });
+                        result = 'Tree Postorder: ' + postorderTraversal(rootPostorder).join(', ');
+                        break;
+                }
+            }
+
+            document.getElementById("output").textContent = result;
+        }
+
+        // --- Setup Buttons ---
+        const algorithms = [
+            'bubbleSort', 'selectionSort', 'insertionSort', 'countingSort', 'radixSort',
+            'linkedList', 'circularLinkedList', 'queue',
+            'treeInorder', 'treePreorder', 'treePostorder'
+        ];
+
+        const algorithmList = document.getElementById('algorithmList');
+        algorithms.forEach(algorithm => {
+            const button = document.createElement('button');
+            button.classList.add('algorithm-btn');
+            button.innerText = algorithm.replace(/([A-Z])/g, ' $1').trim();
+            button.onclick = () => runAlgorithm(algorithm);
+            algorithmList.appendChild(button);
+        });
+    </script>
+
+    <div style="text-align: center;">
+        <h3>Enter Data (Comma separated values):</h3>
+        <input type="text" id="inputData" placeholder="Enter values, e.g., 5, 2, 8, 1">
+    </div>
+
+</body>
+</html>
